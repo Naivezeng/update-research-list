@@ -1,5 +1,6 @@
 import xlrd
 import re
+import csv
 from research_item import Research
 
 
@@ -8,6 +9,24 @@ endIndex = 401.0
 
 
 researchList = []
+teacherCNSumDict = {}
+teacherENSumDict = {}
+
+
+def read_csv_data(en_file='teacher_en_research.csv', cn_file='teacher_cn_research.csv'):
+    en_csv_reader = csv.reader(open(en_file, encoding='utf-8'))
+    for row in en_csv_reader:
+        name = row[1]
+        employ_id = row[0]
+        min_px = row[2]
+        teacherENSumDict[name] = [employ_id, min_px]
+
+    cn_csv_reader = csv.reader(open(cn_file, encoding='utf-8'))
+    for row in cn_csv_reader:
+        name = row[1]
+        employ_id = row[0]
+        min_px = row[2]
+        teacherCNSumDict[name] = [employ_id, min_px]
 
 
 def read_xlsx_data(filename='teachers_research_update.xlsx'):
@@ -49,14 +68,59 @@ def get_target_names_in():
     return name_list_str[:-1]
 
 
+def generate_zwqk_sql(employee_id='', name='', subject='', journal='', year='', px=0):
+    sql_str = "INSERT INTO `fudan_research_paper_zwqk` (`ID`, `employee_ID`, `ISI_number`, `name`, `rank`, `subject`, " \
+              "`journal`, `year`, `head`, `end`, `hidden`, `px`) " \
+              "VALUES (NULL, '{0}', NULL, '{1}', NULL, '{2}', '{3}', '{4}', NULL, NULL, '0', '{5}');"\
+        .format(employee_id, name, subject, journal, year, str(px))
+    return sql_str
+
+
+def generate_ywqk_sql(employee_id='', name='', subject='', journal='', year='', px=0):
+    sql_str = "INSERT INTO `fudan_research_paper_ywqk` (`ID`, `employee_ID`, `ISI_number`, `name`, `rank`, `subject`, " \
+              "`journal`, `year`, `head`, `end`, `hidden`, `px`) " \
+              "VALUES (NULL, '{0}', NULL, '{1}', NULL, '{2}', '{3}', '{4}', NULL, NULL, '0', '{5}');"\
+        .format(employee_id, name, subject, journal, year, str(px))
+    return sql_str
+
+
 def generate_sql():
-    pass
+    with open('target_script.sql', 'w') as f:
+        for item in researchList:
+            if item.author not in teacherENSumDict.keys() and item.author not in teacherCNSumDict.keys():
+                print("中英文期刊db无作者信息：" + item.author)
+                continue
+            if is_english_journal(item):
+                if item.author not in teacherENSumDict.keys():
+                    print("作者：" + item.author + "第一份英文期刊")
+                    employee_id = teacherCNSumDict[item.author][0]
+                    px = 2000
+                    teacherENSumDict[item.author] = [employee_id, str(1999)]
+                    f.write(generate_ywqk_sql(employee_id, item.author, item.achi, item.pub, item.time, px-1) + '\n')
+                else:
+                    employee_id = teacherENSumDict[item.author][0]
+                    px = int(teacherENSumDict[item.author][1])
+                    teacherENSumDict[item.author] = [employee_id, str(px-1)]
+                    f.write(generate_ywqk_sql(employee_id, item.author, item.achi, item.pub, item.time, px-1) + '\n')
+            else:
+                if item.author not in teacherCNSumDict.keys():
+                    print("作者：" + item.author + "第一份中文期刊")
+                    employee_id = teacherENSumDict[item.author][0]
+                    px = 2000
+                    teacherCNSumDict[item.author] = [employee_id, str(1999)]
+                    f.write(generate_ywqk_sql(employee_id, item.author, item.achi, item.pub, item.time, px-1) + '\n')
+                else:
+                    employee_id = teacherCNSumDict[item.author][0]
+                    px = int(teacherCNSumDict[item.author][1])
+                    teacherCNSumDict[item.author] = [employee_id, str(px-1)]
+                    f.write(generate_zwqk_sql(employee_id, item.author, item.achi, item.pub, item.time, px-1) + '\n')
 
 
 if __name__=="__main__":
     read_xlsx_data()
-    sql_in_para = get_target_names_in()
-
-    print(sql_in_para)
+    # sql_in_para = get_target_names_in()
+    # print(sql_in_para)
+    read_csv_data()
+    generate_sql()
 
     print('+++++ All Things Done! ++++')

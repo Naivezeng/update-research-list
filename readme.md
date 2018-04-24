@@ -10,4 +10,9 @@
 ## 3. Generate SQL Script
 * Execute 'generate_sql()'
 
-## 4. Execute SQL in target_sql.txt
+## 4. Correct SQL Script if any quota syntax error
+
+
+## 5. Execute SQL in target_script.sql
+* phpmyadmin seems only permit 10 insert at one time, so do it manually in batches.
+

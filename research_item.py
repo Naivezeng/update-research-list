@@ -5,8 +5,8 @@ class Research(object):
         self.regNo = regNo
         self.author = author
         self.dept = dept
-        self.achi = achi
-        self.pub = pub
+        self.achi = "《" + achi + "》"
+        self.pub = "《" + pub + "》"
         self.time = time
         self.cat = cat
         self.others = others
