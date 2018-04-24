@@ -1,6 +1,6 @@
 import xlrd
 import re
-from ResearchDTO import Research
+from research_item import Research
 
 
 startIndex = 0.0
