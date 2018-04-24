@@ -16,3 +16,9 @@
 ## 5. Execute SQL in target_script.sql
 * phpmyadmin seems only permit 10 insert at one time, so do it manually in batches.
 
+
+## Other SQL Note:
+> SELECT name, COUNT(DISTINCT(employee_ID)) AS cnt FROM `fudan_basic_info` WHERE 1=1 group by name;
+> SELECT name, COUNT(DISTINCT(employee_ID)) AS cnt FROM `fudan_basic_info` WHERE status = '在职' group by name;
+> SELECT name, cnt FROM ( SELECT name, COUNT(DISTINCT(employee_ID)) AS cnt FROM `fudan_basic_info` WHERE status = '在职' group by name ) t where cnt > 1;
+> INSERT INTO `fudan_research_paper_zwqk` (`ID`, `employee_ID`, `ISI_number`, `name`, `rank`, `subject`, `journal`, `year`, `head`, `end`, `hidden`, `px`) VALUES (NULL, 'aa123', NULL, 'aa123', NULL, '11123', '123123', '123123', NULL, NULL, '0', '0');

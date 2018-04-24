@@ -88,7 +88,7 @@ def generate_sql():
     with open('target_script.sql', 'w') as f:
         for item in researchList:
             if item.author not in teacherENSumDict.keys() and item.author not in teacherCNSumDict.keys():
-                print("中英文期刊db无作者信息：" + item.author)
+                print("中英文期刊db无作者信息：" + item.author + "，登记号：" + str(item.regNo))
                 continue
             if is_english_journal(item):
                 if item.author not in teacherENSumDict.keys():
